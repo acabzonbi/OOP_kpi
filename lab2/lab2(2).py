@@ -148,7 +148,7 @@ class GraphicEditor: #головне вікно програми
 
     def on_press(self, event):
         if self.count >= self.N: #перевірка чи заповнений масив
-            messagebox.showwarning("Масив заповнений ({self.N} об'єктів)!")
+            messagebox.showwarning("Масив заповнений!")
             return
 
         self.drawing = True

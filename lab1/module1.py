@@ -47,7 +47,7 @@ class Dialog1:
             command=self._on_cancel
         ).pack(side=tk.LEFT, padx=10)
 
-        parent.wait_window(self.top)   # чекаємо закриття діалогу
+        parent.wait_window(self.top)   # чекаємо закриття вікна
 
     def _on_ok(self):
         selection = self.listbox.curselection()
