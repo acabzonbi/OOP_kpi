@@ -1,7 +1,21 @@
+import os
 import tkinter as tk
 from tkinter import messagebox
 from shapes import (Point, Line, Rect, Ellipse,
                     LineWithCircles, Cube)
+
+
+ICONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
+
+ICON_FILES = {
+    "POINT": "point.png",
+    "LINE": "line.png",
+    "RECT": "rectangle.png",
+    "ELLIPSE": "circle.png",
+    "LINE-W-CIRCLES": "line_with_circles.png",
+    "CUBE": "cube.png",
+    "CLEAR": "trash.png",
+}
 
 
 class ToolTip:
@@ -41,7 +55,7 @@ class MyEditor:
         self.pcshape = [None] * self.N
         self.count = 0
 
-        self.current_type = "Прямокутник"
+        self.current_type = "RECT"
         self.drawing = False
         self.current_shape = None
         self.rubber_ids = []          # може бути список (для складних фігур)
@@ -50,12 +64,12 @@ class MyEditor:
 
         #легко додавати нові типи
         self._shape_factory = {
-            "Крапка": Point,
-            "Лінія": Line,
-            "Прямокутник": Rect,
-            "Еліпс": Ellipse,
-            "Лінія з кружечками": LineWithCircles,
-            "Каркас куба": Cube,
+            "POINT": Point,
+            "LINE": Line,
+            "RECT": Rect,
+            "ELLIPSE": Ellipse,
+            "LINE-W-CIRCLES": LineWithCircles,
+            "CUBE": Cube,
         }
 
         self._create_menu()
@@ -99,32 +113,46 @@ class MyEditor:
         toolbar = tk.Frame(self.root, bd=1, relief=tk.RAISED)
         toolbar.pack(side=tk.TOP, fill=tk.X)
 
-        buttons = [
-            ("●", "Крапка", "Крапка"),
-            ("／", "Лінія", "Лінія"),
-            ("▭", "Прямокутник", "Прямокутник"),
-            ("○", "Еліпс", "Еліпс"),
-            ("⚬─⚬", "Лінія з кружечками", "Лінія з кружечками"),
-            ("◻︎", "Каркас куба", "Каркас куба"),
-        ]
+        self.icons = {}
 
-        for icon, tip, shape_name in buttons:
-            btn = tk.Button(
+        for shape_name in self._shape_factory:
+            file_name = ICON_FILES.get(shape_name)
+            btn_opts = {}
+            if file_name:
+                try:
+                    self.icons[shape_name] = tk.PhotoImage(
+                        file=os.path.join(ICONS_DIR, file_name))
+                    btn_opts["image"] = self.icons[shape_name]
+                except tk.TclError:
+                    pass
+            if "image" not in btn_opts:
+                btn_opts["text"] = shape_name
+
+            btn = tk.Radiobutton(
                 toolbar,
-                text=icon,
-                font=("Segoe UI", 12),
-                width=4,
+                indicatoron=False,
+                variable=self.type_var,
+                value=shape_name,
                 relief=tk.RAISED,
-                command=lambda n=shape_name: self.set_type(n)
+                padx=4, pady=4,
+                command=lambda n=shape_name: self.set_type(n),
+                **btn_opts
             )
             btn.pack(side=tk.LEFT, padx=2, pady=2)
-            ToolTip(btn, tip)
+            ToolTip(btn, shape_name)
 
         tk.Frame(toolbar, width=8).pack(side=tk.LEFT)
-        clear_btn = tk.Button(toolbar, text="🗑", font=("Segoe UI", 14),
-                              width=3, relief=tk.RAISED, command=self.clear_all)
+        clear_opts = {"text": "🗑", "font": ("Segoe UI", 14), "width": 3}
+        try:
+            self.icons["CLEAR"] = tk.PhotoImage(
+                file=os.path.join(ICONS_DIR, ICON_FILES["CLEAR"]))
+            clear_opts = {"image": self.icons["CLEAR"]}
+        except tk.TclError:
+            pass
+        clear_btn = tk.Button(toolbar, relief=tk.RAISED, padx=4, pady=4,
+                              command=self.clear_all, **clear_opts)
         clear_btn.pack(side=tk.RIGHT, padx=2, pady=2)
-        ToolTip(clear_btn, "Очистка")
+        ToolTip(clear_btn, "CLEAR")
 
     def _create_canvas(self):
         self.canvas = tk.Canvas(self.root, bg="white", cursor="cross")
@@ -193,13 +221,10 @@ class MyEditor:
             "Про програму",
             "Лабораторна робота 4\n"
             "Варіант: 19\n"
-            "Масив: статичний, N = 120\n"
-            "Гумовий слід: пунктирна лінія\n"
-            "Нові фігури (множинне успадкування):\n"
-            "  • Лінія з кружечками (Line + Ellipse)\n"
-            "  • Каркас куба (Line + Rect)\n"
-            "Прямокутник: по двох кутах, біле заповнення\n"
-            "Еліпс: від центру, без заповнення"
+            "Масив статичний, N = 120\n"
+            "Гумовий слід пунктирна лінія\n"
+            "Прямокутник по двох кутах, біле заповнення\n"
+            "Еліпс від центру, без заповнення"
         )
 
 
